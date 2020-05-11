@@ -1,0 +1,78 @@
+
+ =============================
+ = File description =
+ =============================
+ Sjavac.java - The main class. Gets the file’s path as a parameter, reads the file and then checks the file.
+ Prints if the file is valid, and prints exceptions if found during the process.
+
+ line_analyzer package:
+ Regex.java - This class saves all the regex that are needed to analyze the lines in the file. Uses the
+ functions fromFunctionLineAnalyzer, VariableLineAnalyzer, ConditionLineAnalyzer, MethodLineAnalyzer.
+
+ PatternClass.java - This class saves all the patterns of the regex in the Regex class that are needed to
+ analyze the lines of the files.
+ LineAnalyze.java - a facade class for all the methods that are used check the lines of the file.
+ FunctionLineAnalyzer.java - This class has methods to analyze a line of method type: function declaration,
+ function call VariableLineAnalyzer.java - This class has methods to analyze a line of variable type:
+ variable declaration, variable assignment ConditionLineAnalyzer.java - This class has methods to analyze
+ a line of condition type: if/while condition line MethodLinesAnalyzer.java - This class has method to analyze
+ a line that is inside a method: return line, closing brackets Type.java - an enum class that saves all the
+ possible types for variables. Has a getName method that returns for each type it’s String value, and a
+ getDefaultTypeValue that return the default value for each type.
+ Variable.java - this class represents a variable object.
+ These classes are in the same package because they are all used to analyze lines by syntax.
+
+ sjavac_validator package:
+ In this package are the classes that check the file logically.
+ FunctionScope.java - This class represents a function scope in the code, it can check validation and
+ store the function’s name and parameters, and all its inner scopes information.
+ GlobalScope.java -This class is used to store a Global Scope object that can check validation
+ and store it’s name , Variables and Functions.
+ Scope.java -abstract class of a Scope (abstract of FunctionScope and GlobalScope)
+ ScopeVariables.java -this class stores all the information of a single innerScope of FunctionScope object
+ SjavaValidatior.java - Used to validate if a sjavac code file is legal or not.
+ this class has private constructor and it’s impossible to create instances of it.
+ (Singletone)
+ SjavaFileReader.java - This class reads the file and saves the lines of the file in an array list, ignores
+ empty lines and comments lines.
+
+ =============================
+ = Design =
+ =============================
+ The program first reads the file and saves the lines in the file in an array list of strings. it ignores
+ empty lines and comment lines. Then, the program goes over every line in the array list and checks the type
+ of the line. There are several types of possible lines in a file. For every line, checks if the current line
+ is one of the possible lines in the file, and uses the regex class to check if the syntax of the line matches
+ the pattern. afterwards, if the syntax is correct checks the line logically, for example in a line assignment
+ line, checks if the variable is already declared. In our design, we divide our program into small independent
+ units, as much as possible. For example, the Pattern class is a separated class that saves all the patters.
+ The regex class is a seprated class that saves all the regex.
+ The class responsible for all the code checks is a singleton class called SjavacFileReader.
+ the reason we chose to make it singleton is because thee is no need for more then one code validator, but
+ still we wanted it to save the current line nmber currently beeing check so we could prit the line number
+ of the line that causes the error when found by the validator.
+
+ =============================
+ = Implementation details =
+
+ =============================
+ Program flow:
+ SjavacFileReader reads the file and convert it to an ArrayList of Strings without all the empty and comment
+ lines. ==> SjavacValidaor.validateSjavaCode runs on the fileArray looking for errors ==> if error is found
+ SjavacException is thrown ==> Exceptions are catched and printed in the main method of Sjavac class.
+
+ SjavacValidaor Implementation:
+
+ First the goes over all the lines of the Global Scope in the array using the globalScopeCheck function with a
+ Scope Depth counter. during the run collect all the names and parameters of the functions and global variables
+ declared in the Global scope and check validity of their definition. also check for syntax errors and
+ unbalanced brackets error in this run. functions are saved as FunctionScope objects with all their parameters.
+
+ If the global scope is valid, go over all the FunctionScopes that are declared in the GlobalScope object.
+ Whenever an inner scope is opened inside the function (e.g valid "if(a){"" condition line was found in
+ function), the FunctionScope create a ScopeVariables object to contain all the local variables of the inner
+ scope. all the ScopeVariables are save as a LinkedList in the FunctionScope, so when a variable line is found
+ in the code, we use a descending Iterator to go over the upper scopes to search for the variable declaration
+ or assignment.
+ when an inner scope is closed (found closing "}" in the array) the FunctionScope deletes it’s last ScopeVariables
+ Node so we won’t go over it again in the check.
